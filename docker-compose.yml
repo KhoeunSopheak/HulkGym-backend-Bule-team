@@ -32,3 +32,4 @@ services:
     volumes:
       - .:/usr/src/app        # Mount the current directory to /usr/src/app in the container
       - /usr/src/app/node_modules  # Avoid overwriting node_modules in the container
+
