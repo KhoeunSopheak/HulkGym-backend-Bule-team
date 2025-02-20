@@ -6,8 +6,8 @@ const router = Router();
 
 router.post("/create", createBranch);
 router.get("/branches", allBranch);
-router.get("/branch/:id", firstBranch);
-router.put("/branch/:id", updateBranch);
-router.delete("/branch/:id", deleteBranch);
+router.get("/:id", firstBranch);
+router.put("/:id", updateBranch);
+router.delete("/:id", deleteBranch);
 
 export default router;
