@@ -14,13 +14,35 @@
 #       JWT_SECRET: ${JWT_SECRET}
 
 
-version: '3'
 services:
-  express-app:
-    build: .
-    container_name: express-container
+  database:
+    image: postgres:14-alpine
+    restart: always
     ports:
-      - "3000:3000"  # Map host port 3000 to container port 3000
+      - "5433:5432"
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_DB=${DB_DATABASE}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - "5055:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+  backend:
+    restart: always
+    build: .
+    ports:
+      - "3003:3000"
     environment:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
@@ -29,6 +51,13 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       NODE_ENV: ${NODE_ENV}
       JWT_SECRET: ${JWT_SECRET}
+      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+    depends_on:
+      - database
     volumes:
-      - .:/usr/src/app        # Mount the current directory to /usr/src/app in the container
-      - /usr/src/app/node_modules  # Avoid overwriting node_modules in the container
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+volumes:
+  postgres-data:
+  pgadmin-data:
