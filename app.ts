@@ -15,6 +15,7 @@ import company from "./src/routes/company";
 import telegramBot from "node-telegram-bot-api";
 import { handleMessage } from "./src/service/telegram.service";
 import axios from "axios";
+import { Branch } from "./src/entity/branch.entity";
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.TELEGRAM_TOKEN || "";
@@ -46,6 +47,17 @@ const bot = new telegramBot(token, {polling: true});
 
 const commands = [
   { command: "/start", description: "Start the bot and get command list" },
+  { command: "/help", description: "Get help and usage instructions" },
+  { command: "/branch", description: "Get branch place" },
+  { command: "/contact", description: "Get contact information" },
+  { command: "/promotion", description: "See current promotions" },
+  { command: "/feedback", description: "Submit feedback" },
+  { command: "/image", description: "Send an image" },
+  { command: "/text", description: "Send a text message" },
+  { command: "/link", description: "Send a link" },
+  { command: "/list", description: "Send a list" },
+  { command: "/table", description: "Send a table" },
+  { command: "/options", description: "Send options" },
   { command: "/showtext", description: "Send a text message" },
   { command: "/showimage", description: "Send a message with an image" },
   { command: "/showoptions", description: "Send options" },
@@ -63,6 +75,41 @@ bot
     );
   });
 
+
+// Handle other commands
+bot.onText(/\/help/, (msg) => {
+  bot.sendMessage(
+    msg.chat.id,
+    "This bot allows you to access various features. Use /start to see available commands."
+  );
+});
+
+bot.onText(/\/branch/, async (msg) => {
+  const branchRepo = AppDataSource.getRepository(Branch);
+
+    try {
+        const branches = await branchRepo.find({
+            take: 10,
+            order: { create_at: "DESC" },
+        });
+
+        if (branches.length === 0) {
+            return bot.sendMessage(msg.chat.id, "No branches found.");
+        }
+
+        const branchList = branches.map(
+            (branch, index) => `${index + 1}. ${branch.name} - ${branch.location}`
+        ).join("\n");
+
+        bot.sendMessage(msg.chat.id, `Check out of our branches:\n\n${branchList}`);
+    } catch (error) {
+        console.error("Error fetching branches:", error);
+        bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.");
+    }
+});
+
+bot.onText(/\/contact/, (msg) => {
+  bot.sendMessage(msg.chat.id, "You can contact us at support@example.com.");
   bot.onText(/\/showimage/, (msg) => {
     const imageUrl = "https://res.cloudinary.com/dzimzklgj/image/upload/c_thumb,w_400/Hulk%20Gym/announcement";
     const description = `
@@ -168,8 +215,6 @@ bot.on("message", (msg) => {
     console.log(err);
   }
 });
-
-
 
 // Start server
 const PORT = process.env.PORT || 3000;

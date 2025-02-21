@@ -36,7 +36,16 @@ export const createBranch = async (req: Request, res: Response) => {
 
         await branchRepo.save(branch);
 
-        return res.status(201).json({ message: "Branch created successfully" });
+        return res.status(201).json({ message: "Branch created successfully", 
+            branch: {
+                id: branch.id,
+                name: branch.name,
+                location: branch.location,
+                open_time: branch.open_time,
+                close_time: branch.close_time,
+                company_id: branch.company_id.id,
+            }
+         });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Internal server error" });
