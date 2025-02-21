@@ -8,6 +8,7 @@ import {
     UpdateDateColumn,
   } from 'typeorm';
   import { Company } from './company.entity'; // Assuming UserInfo entity is in user.entity.ts
+import { text } from 'stream/consumers';
   
   @Entity('branch')
   export class Branch {
@@ -29,7 +30,7 @@ import {
   
     @Column({ type: 'time' })
     close_time: string; 
-  
+
     @CreateDateColumn()
     create_at: Date; 
   
