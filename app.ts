@@ -7,7 +7,7 @@ import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import swaggerOptions from "./swagger";
 import cors from "cors";
-import bodyParser from "body-parser";
+import bodyParser, { text } from "body-parser";
 import activity from "./src/routes/activity";
 import branch from "./src/routes/branch";
 import coupon from "./src/routes/coupon"
@@ -43,7 +43,7 @@ app.use("/api/company", company);
 app.use("/api/coupon", coupon);
 
 // Create a bot that uses 'polling' to fetch new updates
-const bot = new telegramBot(token, {polling: true});
+const bot = new telegramBot(token, { polling: true });
 
 const commands = [
   { command: "/start", description: "Start the bot and get command list" },
@@ -68,12 +68,44 @@ bot
   .setMyCommands(commands)
   .then(() => console.log("Commands set successfully"));
 
-  bot.onText(/\/showtext/, (msg) => {
-    bot.sendMessage(
-      msg.chat.id,
-      "Welcome to WMAD Class"
-    );
-  });
+bot.onText(/\/start/, (msg) => {
+  bot.sendMessage(
+    msg.chat.id,
+    `💪 Welcome to Hulkgym-Bot!
+      Stay fit, stay updated, and enjoy exclusive perks! Here’s what you can do:
+
+📌 **Commands:**
+
+✅ /promotions – Check out the latest deals & discounts!
+
+🎟 /freecoupons – Grab limited-time free coupons!
+
+💰 /pricing – View membership and service pricing.
+
+📰 /news – Get the latest updates and announcements.
+
+🏋️ /workouts – Explore workout plans & fitness tips.
+
+📋 /survey – Share your feedback & help us improve.
+
+📋 /branches – View all branches of Hulk Gym.
+
+🚀 /joinus – Become a member and start your journey!
+
+❤️ /survey – Help us to improve our customer experience by giving a survey.
+
+📜 /mymembership – View your membership details.
+
+🔔 /subscribe – Stay updated with notifications.`,
+  );
+});
+
+bot.onText(/\/showtext/, (msg) => {
+  bot.sendMessage(
+    msg.chat.id,
+    "Welcome to WMAD Class"
+  );
+});
 
 
 // Handle other commands
@@ -87,29 +119,37 @@ bot.onText(/\/help/, (msg) => {
 bot.onText(/\/branch/, async (msg) => {
   const branchRepo = AppDataSource.getRepository(Branch);
 
-    try {
-        const branches = await branchRepo.find({
-            take: 10,
-            order: { create_at: "DESC" },
-        });
+  try {
+    const branches = await branchRepo.find({
+      take: 10,
+      order: { create_at: "DESC" },
+    });
 
-        if (branches.length === 0) {
-            return bot.sendMessage(msg.chat.id, "No branches found.");
-        }
-
-        const branchList = branches.map(
-            (branch, index) => `${index + 1}. ${branch.name} - ${branch.location}`
-        ).join("\n");
-
-        bot.sendMessage(msg.chat.id, `Check out of our branches:\n\n${branchList}`);
-    } catch (error) {
-        console.error("Error fetching branches:", error);
-        bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.");
+    if (branches.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No branches found.");
     }
+
+    const options = {
+      reply_markup: {
+        inline_keyboard: branches.map(branch => [
+          {
+            text: `${branch.name}`,
+            callback_data: `${branch.location}`,
+          }
+        ]),
+      },
+    };
+
+    bot.sendMessage(msg.chat.id, "Choose your favorite Hulk-gym branch", options);
+  } catch (error) {
+    console.error("Error fetching branches:", error);
+    bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.");
+  }
 });
 
 bot.onText(/\/contact/, (msg) => {
   bot.sendMessage(msg.chat.id, "You can contact us at support@example.com.");
+  
   bot.onText(/\/showimage/, (msg) => {
     const imageUrl = "https://res.cloudinary.com/dzimzklgj/image/upload/c_thumb,w_400/Hulk%20Gym/announcement";
     const description = `
@@ -119,40 +159,42 @@ bot.onText(/\/contact/, (msg) => {
  Ever wanted to experience Hulk Gym before signing up? Now’s your chance! Join us for an *exclusive Open House* where you can try our facilities *for FREE* for one day. Get access to top-notch equipment, professional trainers, and special discounts on memberships.
  *👉 Don’t miss out! Bring a friend and train together.*
  `;
-     bot.sendPhoto(
-       msg.chat.id, imageUrl,
-       {
-         caption: description,
-         parse_mode: "Markdown",
-       }
-     );
-   });
+    bot.sendPhoto(
+      msg.chat.id, imageUrl,
+      {
+        caption: description,
+        parse_mode: "Markdown",
+      }
+    );
+  })
+});
 
-   bot.onText(/\/showoptions/, (msg) => {
-    const chatId = msg.chat.id;
-    const fruits = [
-      [
-        {
-          text: "Fruit 1",
-          callback_data: "showoptions=id-1",
-        },
-      ],
-      [
-        {
-          text: "Fruit 2",
-          callback_data: "showoptions=id-2",
-        },
-      ],
-    ];
-    
-    const options = {
-      reply_markup: {
-        inline_keyboard: fruits,
+
+bot.onText(/\/showoptions/, (msg) => {
+  const chatId = msg.chat.id;
+  const fruits = [
+    [
+      {
+        text: "Fruit 1",
+        callback_data: "showoptions=id-1",
       },
-    };
-    bot.sendMessage(chatId, "Choose your favourite fruit:", options);
-  });
-  
+    ],
+    [
+      {
+        text: "Fruit 2",
+        callback_data: "showoptions=id-2",
+      },
+    ],
+  ];
+
+  const options = {
+    reply_markup: {
+      inline_keyboard: fruits,
+    },
+  };
+  bot.sendMessage(chatId, "Choose your favourite fruit:", options);
+});
+
 // Handle callback query when user selected on a fruit
 bot.on("callback_query", (callbackQuery) => {
   const msg = callbackQuery.message;
