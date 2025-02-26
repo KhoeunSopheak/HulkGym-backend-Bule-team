@@ -36,7 +36,7 @@ export const CreateCoupon = async (req: Request, res: Response)=>{
        
                await CouponRepo.save(coupon);
        
-               return res.status(201).json({ message: "Branch created successfully" });
+               return res.status(201).json({ message: "coupon created successfully" });
            } catch (error) {
                console.error(error);
                return res.status(500).json({ message: "Internal server error" });
