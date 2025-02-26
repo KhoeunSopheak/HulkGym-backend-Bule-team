@@ -63,8 +63,9 @@ export const login = async (req: Request, res: Response) => {
     if (!user || !isPasswordValid) {
       return res.status(404).json({ message: "User not found" });
     }
+    const register = userRepo.save(user);
     const token = generateToken({ id: user.id, role: user.role as RoleType });
-    return res.status(200).json({ message: "Login Successfully", token });
+    return res.status(200).json({ message: "Login Successfully", token, userId: user.id  });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
