@@ -17,7 +17,8 @@ import { handleMessage } from "./src/service/telegram.service";
 import axios from "axios";
 import { Branch } from "./src/entity/branch.entity";
 import news from "./src/routes/new";
-import promtion from "./src/routes/promotion"
+import promtion from "./src/routes/promotion";
+import { Workout_plan} from "./src/entity/workout_plan.entity"
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.TELEGRAM_TOKEN || "";
@@ -56,6 +57,7 @@ const commands = [
   { command: "/branch", description: "Get branch place" },
   { command: "/contact", description: "Get contact information" },
   { command: "/promotion", description: "See current promotions" },
+  { command: "/workouts", description: "See workouts" },
   { command: "/feedback", description: "Submit feedback" },
   { command: "/image", description: "Send an image" },
   { command: "/text", description: "Send a text message" },
@@ -153,9 +155,39 @@ bot.onText(/\/branch/, async (msg) => {
 });
 
 bot.onText(/\/contact/, (msg) => {
-  bot.sendMessage(msg.chat.id, "You can contact Rika.");
+  bot.sendMessage(msg.chat.id, "You can contact Rika.")});
+
+bot.onText(/\/workouts/, async (msg) => {
+  const workoutRepo = AppDataSource.getRepository(Workout_plan);
+
+  try {
+    const workouts = await workoutRepo.find({
+      take: 10,
+      order: { create_at: "DESC" },
+    });
+
+    if (workouts.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No workout plan found.");
+    }
+
+    const options = {
+      reply_markup: {
+        inline_keyboard: workouts.map(workout => [
+          {
+            text: `🏋🏼‍♂️${workout.name}`,
+            callback_data: `${workout.id}`,
+          }
+        ]),
+      },
+    };
+      bot.sendMessage(msg.chat.id, "You can see workout.", options);
+    }catch (error) {
+      console.error("Error fetching branches:", error);
+      bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.");
+    }
+  });
   
-  bot.onText(/\/showimage/, (msg) => {
+bot.onText(/\/showimage/, (msg) => {
     const imageUrl = "https://res.cloudinary.com/dzimzklgj/image/upload/c_thumb,w_400/Hulk%20Gym/announcement";
     const description = `
  *1️⃣ Hulk Gym Open House – Try for Free! 🎉*\n
@@ -171,8 +203,7 @@ bot.onText(/\/contact/, (msg) => {
         parse_mode: "Markdown",
       }
     );
-  })
-});
+  });
 
 
 bot.onText(/\/showoptions/, (msg) => {

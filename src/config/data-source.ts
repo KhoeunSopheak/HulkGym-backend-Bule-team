@@ -22,7 +22,7 @@ export const AppDataSource = new DataSource({
   database: DB_DATABASE,
   ssl: false,
   // synchronize: NODE_ENV === "dev" ? false : false,
-  synchronize: true,
+  synchronize: false,
   //
   //logging logs sql command on the treminal
   logging: NODE_ENV === "dev" ? false : false,
