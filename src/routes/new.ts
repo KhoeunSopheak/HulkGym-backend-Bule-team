@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { getAllcoupons,CreateCoupon, GetCouponbyId } from "../controllers/coupon.controller";
+import { GetNewsbyId,getAllnews,Createnews } from "../controllers/news.controller";
 import { checkTelegramData } from "../controllers/telegram.controller";
 
 const router = Router();
 
 //Coupon routes
 
-router.post("/create", CreateCoupon);
-router.get("/", getAllcoupons);
-router.get("/:id", GetCouponbyId);
+router.post("/create", Createnews);
+router.get("/", getAllnews);
+router.get("/:id", GetNewsbyId);
 // router.put("/:id", updateBranch);
 // router.delete("/:id", deleteBranch);
 

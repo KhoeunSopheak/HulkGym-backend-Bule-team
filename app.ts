@@ -16,6 +16,7 @@ import telegramBot from "node-telegram-bot-api";
 import { handleMessage } from "./src/service/telegram.service";
 import axios from "axios";
 import { Branch } from "./src/entity/branch.entity";
+import news from "./src/routes/new"
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.TELEGRAM_TOKEN || "";
@@ -41,6 +42,7 @@ app.use("/api/activity", activity);
 app.use("/api/branch", branch);
 app.use("/api/company", company);
 app.use("/api/coupon", coupon);
+app.use("/api/nws",news)
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new telegramBot(token, { polling: true });

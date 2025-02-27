@@ -12,7 +12,7 @@ import {
   import { Branch } from './branch.entity';
   
   @Entity('coupon')
-  export class Promotion {
+  export class News {
     @PrimaryGeneratedColumn('uuid')
     id: string; // UUID as a primary key
 
