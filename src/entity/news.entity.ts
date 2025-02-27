@@ -11,7 +11,7 @@ import {
   } from 'typeorm';
   import { Branch } from './branch.entity';
   
-  @Entity('coupon')
+  @Entity('news')
   export class News {
     @PrimaryGeneratedColumn('uuid')
     id: string; // UUID as a primary key
