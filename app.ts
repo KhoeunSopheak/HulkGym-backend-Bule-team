@@ -76,10 +76,10 @@ bot
 bot.onText(/\/start/, (msg) => {
   bot.sendMessage(
     msg.chat.id,
-    `💪 Welcome to Hulkgym-Bot!
+    `*💪 Welcome to Hulkgym-Bot!*
       Stay fit, stay updated, and enjoy exclusive perks! Here’s what you can do:
 
-📌 **Commands:**
+📌 *Commands:*
 
 ✅ /promotions – Check out the latest deals & discounts!
 
@@ -153,7 +153,7 @@ bot.onText(/\/branch/, async (msg) => {
 });
 
 bot.onText(/\/contact/, (msg) => {
-  bot.sendMessage(msg.chat.id, "You can contact us at support@example.com.");
+  bot.sendMessage(msg.chat.id, "You can contact Rika.");
   
   bot.onText(/\/showimage/, (msg) => {
     const imageUrl = "https://res.cloudinary.com/dzimzklgj/image/upload/c_thumb,w_400/Hulk%20Gym/announcement";
