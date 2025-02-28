@@ -30,16 +30,13 @@ import {
     @Column({ type: 'time' })
     close_time: string; 
 
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    image: string;
+
     @CreateDateColumn()
     create_at: Date; 
   
     @UpdateDateColumn()
     update_at: Date; 
-
-    @CreateDateColumn()
-    create_by: Date; 
-
-    @CreateDateColumn()
-    update_by: Date; 
   }
   

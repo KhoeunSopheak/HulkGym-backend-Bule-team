@@ -54,7 +54,7 @@ const bot = new telegramBot(token, { polling: true });
 const commands = [
   { command: "/start", description: "Start the bot and get command list" },
   { command: "/help", description: "Get help and usage instructions" },
-  { command: "/branch", description: "Get branch place" },
+  { command: "/branches", description: "Get branch place" },
   { command: "/contact", description: "Get contact information" },
   { command: "/promotion", description: "See current promotions" },
   { command: "/workouts", description: "See workouts" },
@@ -123,36 +123,67 @@ bot.onText(/\/help/, (msg) => {
   );
 });
 
-bot.onText(/\/branch/, async (msg) => {
+bot.onText(/\/branches/, async (msg) => {
+  const chatId = msg.chat.id;
   const branchRepo = AppDataSource.getRepository(Branch);
 
-  try {
-    const branches = await branchRepo.find({
-      take: 10,
-      order: { create_at: "DESC" },
-    });
+  const branches = await branchRepo.find();
 
-    if (branches.length === 0) {
-      return bot.sendMessage(msg.chat.id, "No branches found.");
-    }
-
-    const options = {
-      reply_markup: {
-        inline_keyboard: branches.map(branch => [
-          {
-            text: `${branch.name}`,
-            callback_data: `${branch.location}`,
-          }
-        ]),
-      },
-    };
-
-    bot.sendMessage(msg.chat.id, "Choose your favorite Hulk-gym branch", options);
-  } catch (error) {
-    console.error("Error fetching branches:", error);
-    bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.");
+  if (branches.length === 0) {
+    bot.sendMessage(chatId, "No branches found.");
+    return;
   }
+
+  const branch = branches.map((gym) => ({
+    text: gym.name,
+    callback_data: `branchs=${gym.name}`,
+  }));
+
+  const options = {
+    reply_markup: {
+      inline_keyboard: [branch],
+    },
+  };
+
+  bot.sendMessage(chatId, "Choose your location branch of Hulk_gym:", options);
 });
+
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const selectedOption = callbackQuery.data;
+  const branchRepo = AppDataSource.getRepository(Branch);
+
+  if (!msg || !selectedOption) {
+    return;
+  }
+
+  const branch = await branchRepo.findOneBy({ name: selectedOption.split("=")[1] });
+  if (!branch) {
+    bot.sendMessage(msg.chat.id, "Branch not found.");
+    return;
+  }
+
+  const name = branch.name;
+  const open_time = branch.open_time;
+  const close_time = branch.close_time;
+  const location = branch.location;
+  const image = branch.image;
+
+  if (image) {
+    bot.sendPhoto(msg.chat.id, image, {
+      caption: `*${name} Branch*\n\n⏰ *Open time:* ${open_time}\n⏰ *Close time:* ${close_time}\n\n📍 *Location:* ${location}`,
+      parse_mode: "Markdown",
+    });
+  } else {
+    bot.sendMessage(msg.chat.id, `*${name}*\n\n📍 *Location:* ${location}`, {
+      parse_mode: "Markdown",
+    });
+  }
+
+  bot.answerCallbackQuery(callbackQuery.id);
+});
+
+
 
 bot.onText(/\/contact/, (msg) => {
   bot.sendMessage(msg.chat.id, "You can contact Rika.")});
