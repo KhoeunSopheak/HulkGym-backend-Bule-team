@@ -13,7 +13,7 @@ import {
     @PrimaryGeneratedColumn('uuid')
     id: string; // UUID as primary key
   
-    @Column({ type: 'varchar', length: 30 })
+    @Column({ type: 'varchar', length: 100, nullable: true })
     name: string;
   
     @CreateDateColumn()

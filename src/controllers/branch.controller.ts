@@ -9,10 +9,10 @@ export const createBranch = async (req: Request, res: Response) => {
     const branchRepo = AppDataSource.getRepository(Branch);
     const companyRepo = AppDataSource.getRepository(Company);
 
-    const { name, location, open_time, close_time } = req.body;
+    const { name, location, open_time, close_time, image } = req.body;
     const companyId = req.params?.id;
 
-    if (!name || !location || !open_time || !close_time) {
+    if (!name || !location || !open_time || !close_time || !image) {
         return res.status(400).json({
             message: "All fields are required",
         });
@@ -32,6 +32,7 @@ export const createBranch = async (req: Request, res: Response) => {
         branch.location = location;
         branch.open_time = open_time;
         branch.close_time = close_time;
+        branch.image = image;
         branch.company_id = company;
 
         await branchRepo.save(branch);
@@ -43,6 +44,7 @@ export const createBranch = async (req: Request, res: Response) => {
                 location: branch.location,
                 open_time: branch.open_time,
                 close_time: branch.close_time,
+                image: branch.image,
                 company_id: branch.company_id.id,
             }
          });
