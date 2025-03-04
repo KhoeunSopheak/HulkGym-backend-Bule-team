@@ -5,42 +5,31 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
 } from "typeorm";
-import { RoleEnum } from "../common/types/enum";
-import { Activity } from "./activity.entity";
 
 @Entity({ name: "user_info" })
 export class UserInfo {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ nullable: false })
-  name: string;
+  @Column({ nullable: false, unique: true })
+  chatId: string;
 
   @Column({ nullable: false })
-  userEmail: string;
-
-  @Column({ nullable: true })
-  userContact: string;
+  firstName: string;
 
   @Column({ nullable: false })
-  password: string;
+  lastName: string;
 
-  @Column({
-    type: "varchar",
-    length: 255,
-    nullable: true,
-    default: RoleEnum[2],
-  }) // Fix here
-  role: string;
+  @Column({ nullable: false, unique: true })
+  email: string;
+
+  @Column({ nullable: false, unique: true })
+  phone: string;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   modifiedAt: Date;
-
-  @OneToMany(() => Activity, (activity) => activity.user)
-  activities: Activity[]; // One user can have many activities
 }

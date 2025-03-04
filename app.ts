@@ -18,6 +18,7 @@ import axios from "axios";
 import { Branch } from "./src/entity/branch.entity";
 import news from "./src/routes/new";
 import promtion from "./src/routes/promotion";
+import workout from "./src/routes/workout";
 import { Workout_plan} from "./src/entity/workout_plan.entity"
 
 // replace the value below with the Telegram token you receive from @BotFather
@@ -46,6 +47,7 @@ app.use("/api/company", company);
 app.use("/api/coupon", coupon);
 app.use("/api/news",news);
 app.use("/api/promotion",promtion);
+app.use("/api/workout", workout);
 
 
 // Create a bot that uses 'polling' to fetch new updates
@@ -53,6 +55,11 @@ const bot = new telegramBot(token, { polling: true });
 
 const commands = [
   { command: "/start", description: "Start the bot and get command list" },
+  {
+    command: "/openminiapp",
+    description: "Open Mini App",
+    web_app: { url: "https://tg-miniapp4dev.vercel.app/" }
+  },
   { command: "/help", description: "Get help and usage instructions" },
   { command: "/branches", description: "Get branch place" },
   { command: "/contact", description: "Get contact information" },
@@ -211,7 +218,7 @@ bot.onText(/\/workouts/, async (msg) => {
         ]),
       },
     };
-      bot.sendMessage(msg.chat.id, "You can see workout.", options);
+      bot.sendMessage(msg.chat.id, "You can view Hulk Gym Workout Plans.", options);
     }catch (error) {
       console.error("Error fetching branches:", error);
       bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.");
