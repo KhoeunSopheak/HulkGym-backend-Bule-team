@@ -6,8 +6,10 @@ import {
     JoinColumn,
     CreateDateColumn,
     UpdateDateColumn,
+    OneToMany,
   } from 'typeorm';
-  import { Company } from './company.entity'; // Assuming UserInfo entity is in user.entity.ts
+  import { Company } from './company.entity'; 
+  import { Promotion } from './promotion.entity';// Assuming UserInfo entity is in user.entity.ts
   
   @Entity('branch')
   export class Branch {
@@ -17,6 +19,12 @@ import {
     @ManyToOne(() => Company, (branch) => branch.company)
     @JoinColumn({ name: 'company_id' })
     company_id: Company;
+
+    @OneToMany(() => Promotion, (promotion) => promotion.id)
+    @JoinColumn({name: 'promotion_id'})
+    promotion_id: Promotion;
+
+
   
     @Column({ type: 'varchar', length: 30 })
     name: string; 
