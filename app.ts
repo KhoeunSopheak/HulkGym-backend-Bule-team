@@ -16,8 +16,9 @@ import telegramBot from "node-telegram-bot-api";
 import { handleMessage } from "./src/service/telegram.service";
 import axios from "axios";
 import { Branch } from "./src/entity/branch.entity";
+import { Promotion } from "./src/entity/promotion.entity";
 import news from "./src/routes/new";
-import promtion from "./src/routes/promotion";
+import promotion from "./src/routes/promotion"
 import workout from "./src/routes/workout";
 import { Workout_plan} from "./src/entity/workout_plan.entity"
 
@@ -46,9 +47,8 @@ app.use("/api/branch", branch);
 app.use("/api/company", company);
 app.use("/api/coupon", coupon);
 app.use("/api/news",news);
-app.use("/api/promotion",promtion);
+app.use("/api/promotion",promotion);
 app.use("/api/workout", workout);
-
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new telegramBot(token, { polling: true });
@@ -120,6 +120,40 @@ bot.onText(/\/showtext/, (msg) => {
     "Welcome to WMAD Class"
   );
 });
+
+const img = "https://plus.unsplash.com/premium_photo-1682310158823-917a4f726802?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cHJvbW90aW9ufGVufDB8fDB8fHww";
+
+bot.onText(/\/promotion/, async (msg) => {
+  const promotionRepo = AppDataSource.getRepository(Promotion);
+  const branchRepo = AppDataSource.getRepository(Branch);
+
+  try {
+    const promotion = await promotionRepo.find({
+      order: { createAt: "DESC" },
+    });
+
+    if (promotion.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No promotion found.");
+    }
+
+    for (const promotions of promotion) {
+      const branches = await branchRepo.findOne({ where: { id: promotions.branch.id } });
+  
+      if (!branches) {
+        return bot.sendMessage(msg.chat.id, "No branches found.");
+      }
+  
+      await bot.sendPhoto(msg.chat.id, img, {
+        caption: `📢 *${promotions.title}* 📢 \n\n\n📌 *Location:* ${branches.name}\n\n🔥 *Discount:* *${promotions.percentage}%* 🔥 \n\n📅 *End-date:* *${promotions.end_date}*\n\n📝 *Description:* ${promotions.description}`,
+        parse_mode: "Markdown",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching promotion:", error);
+    bot.sendMessage(msg.chat.id, "Failed to fetch promotion. Please try again later.");
+  }
+});
+
 
 
 // Handle other commands

@@ -8,6 +8,7 @@ import {
     UpdateDateColumn,
     OneToOne,
     ManyToMany,
+    OneToMany,
   } from 'typeorm';
   import { Branch } from './branch.entity';
   
@@ -19,7 +20,7 @@ import {
     @Column({ type: 'text' })
     title: String;  
 
-    @ManyToMany(() => Branch, (branch) => branch.id)
+    @ManyToOne(() => Branch, (branch) => branch.id)
         @JoinColumn({ name: 'branchId' })
         branch: Branch; 
   
