@@ -19,6 +19,8 @@ import { Branch } from "./src/entity/branch.entity";
 import { Promotion } from "./src/entity/promotion.entity";
 import news from "./src/routes/new";
 import promotion from "./src/routes/promotion"
+import workout from "./src/routes/workout";
+import { Workout_plan} from "./src/entity/workout_plan.entity"
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.TELEGRAM_TOKEN || "";
@@ -46,17 +48,23 @@ app.use("/api/company", company);
 app.use("/api/coupon", coupon);
 app.use("/api/news",news);
 app.use("/api/promotion",promotion);
-
+app.use("/api/workout", workout);
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new telegramBot(token, { polling: true });
 
 const commands = [
   { command: "/start", description: "Start the bot and get command list" },
+  {
+    command: "/openminiapp",
+    description: "Open Mini App",
+    web_app: { url: "https://tg-miniapp4dev.vercel.app/" }
+  },
   { command: "/help", description: "Get help and usage instructions" },
-  { command: "/branch", description: "Get branch place" },
+  { command: "/branches", description: "Get branch place" },
   { command: "/contact", description: "Get contact information" },
   { command: "/promotion", description: "See current promotions" },
+  { command: "/workouts", description: "See workouts" },
   { command: "/feedback", description: "Submit feedback" },
   { command: "/image", description: "Send an image" },
   { command: "/text", description: "Send a text message" },
@@ -77,10 +85,10 @@ bot
 bot.onText(/\/start/, (msg) => {
   bot.sendMessage(
     msg.chat.id,
-    `💪 Welcome to Hulkgym-Bot!
+    `*💪 Welcome to Hulkgym-Bot!*
       Stay fit, stay updated, and enjoy exclusive perks! Here’s what you can do:
 
-📌 **Commands:**
+📌 *Commands:*
 
 ✅ /promotions – Check out the latest deals & discounts!
 
@@ -156,41 +164,102 @@ bot.onText(/\/help/, (msg) => {
   );
 });
 
-bot.onText(/\/branch/, async (msg) => {
+bot.onText(/\/branches/, async (msg) => {
+  const chatId = msg.chat.id;
   const branchRepo = AppDataSource.getRepository(Branch);
 
+  const branches = await branchRepo.find();
+
+  if (branches.length === 0) {
+    bot.sendMessage(chatId, "No branches found.");
+    return;
+  }
+
+  const branch = branches.map((gym) => ({
+    text: gym.name,
+    callback_data: `branchs=${gym.name}`,
+  }));
+
+  const options = {
+    reply_markup: {
+      inline_keyboard: [branch],
+    },
+  };
+
+  bot.sendMessage(chatId, "Choose your location branch of Hulk_gym:", options);
+});
+
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const selectedOption = callbackQuery.data;
+  const branchRepo = AppDataSource.getRepository(Branch);
+
+  if (!msg || !selectedOption) {
+    return;
+  }
+
+  const branch = await branchRepo.findOneBy({ name: selectedOption.split("=")[1] });
+  if (!branch) {
+    bot.sendMessage(msg.chat.id, "Branch not found.");
+    return;
+  }
+
+  const name = branch.name;
+  const open_time = branch.open_time;
+  const close_time = branch.close_time;
+  const location = branch.location;
+  const image = branch.image;
+
+  if (image) {
+    bot.sendPhoto(msg.chat.id, image, {
+      caption: `*${name} Branch*\n\n⏰ *Open time:* ${open_time}\n⏰ *Close time:* ${close_time}\n\n📍 *Location:* ${location}`,
+      parse_mode: "Markdown",
+    });
+  } else {
+    bot.sendMessage(msg.chat.id, `*${name}*\n\n📍 *Location:* ${location}`, {
+      parse_mode: "Markdown",
+    });
+  }
+
+  bot.answerCallbackQuery(callbackQuery.id);
+});
+
+
+
+bot.onText(/\/contact/, (msg) => {
+  bot.sendMessage(msg.chat.id, "You can contact Rika.")});
+
+bot.onText(/\/workouts/, async (msg) => {
+  const workoutRepo = AppDataSource.getRepository(Workout_plan);
+
   try {
-    const branches = await branchRepo.find({
+    const workouts = await workoutRepo.find({
       take: 10,
       order: { create_at: "DESC" },
     });
 
-    if (branches.length === 0) {
-      return bot.sendMessage(msg.chat.id, "No branches found.");
+    if (workouts.length === 0) {
+      return bot.sendMessage(msg.chat.id, "No workout plan found.");
     }
 
     const options = {
       reply_markup: {
-        inline_keyboard: branches.map(branch => [
+        inline_keyboard: workouts.map(workout => [
           {
-            text: `${branch.name}`,
-            callback_data: `${branch.location}`,
+            text: `🏋🏼‍♂️${workout.name}`,
+            callback_data: `${workout.id}`,
           }
         ]),
       },
     };
-
-    bot.sendMessage(msg.chat.id, "Choose your favorite Hulk-gym branch", options);
-  } catch (error) {
-    console.error("Error fetching branches:", error);
-    bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.");
-  }
-});
-
-bot.onText(/\/contact/, (msg) => {
-  bot.sendMessage(msg.chat.id, "You can contact us at support@example.com.");
+      bot.sendMessage(msg.chat.id, "You can view Hulk Gym Workout Plans.", options);
+    }catch (error) {
+      console.error("Error fetching branches:", error);
+      bot.sendMessage(msg.chat.id, "Failed to fetch branches. Please try again later.");
+    }
+  });
   
-  bot.onText(/\/showimage/, (msg) => {
+bot.onText(/\/showimage/, (msg) => {
     const imageUrl = "https://res.cloudinary.com/dzimzklgj/image/upload/c_thumb,w_400/Hulk%20Gym/announcement";
     const description = `
  *1️⃣ Hulk Gym Open House – Try for Free! 🎉*\n
@@ -206,8 +275,7 @@ bot.onText(/\/contact/, (msg) => {
         parse_mode: "Markdown",
       }
     );
-  })
-});
+  });
 
 
 bot.onText(/\/showoptions/, (msg) => {
