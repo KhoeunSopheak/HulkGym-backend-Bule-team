@@ -2,7 +2,7 @@ import { comparePassword, encryptPassword, generateToken } from '../utils/encryp
 import { Request, response, Response } from "express";
 import { UserInfo } from "../entity/user.entity";
 import { AppDataSource } from '../config';
-import { RoleEnum, RoleType } from '../common';
+import { RoleType } from '../common';
 import { Coupon_User } from '../entity/coupon_user.entity';
 import { generateCode } from '../utils/generate_code';
 import { Coupon } from '../entity/coupon.entity';
@@ -11,15 +11,15 @@ export const register = async (req: Request, res: Response) => {
   const userRepo = AppDataSource.getRepository(UserInfo);
   const couponuserRepo = AppDataSource.getRepository(Coupon_User);
   const couponRepo = AppDataSource.getTreeRepository(Coupon)
-  const { name, email, password } = req.body;
+  const { firstName, lastName, email, password } = req.body;
 
-  if (!name || !email || !password) {
+  if (!firstName || !lastName || !email || !password) {
     return res.status(500).json({
       message: "something wrong",
     });
   }
 
-  const validUser = await userRepo.findOne({ where: { userEmail: email } });
+  const validUser = await userRepo.findOne({ where: { email: email } });
   if (validUser) {
     return res.status(400).json({
       message: "user already exist!",
@@ -29,8 +29,9 @@ export const register = async (req: Request, res: Response) => {
 
   const hashPassword = await encryptPassword(password);
   const user = new UserInfo();
-  user.name = name;
-  user.userEmail = email;
+  user.firstName = firstName;
+  user.lastName = lastName;
+  user.email = email;
   user.password = hashPassword;
   
 
@@ -78,7 +79,7 @@ export const login = async (req: Request, res: Response) => {
       });
     }
     const userRepo = AppDataSource.getRepository(UserInfo);
-    const user = await userRepo.findOne({ where: { userEmail :email } });
+    const user = await userRepo.findOne({ where: { email :email } });
 
     if (!user) {
       return res.status(400).json({

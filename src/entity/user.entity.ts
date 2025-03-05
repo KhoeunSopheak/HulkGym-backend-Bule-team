@@ -6,11 +6,15 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { RoleType } from "../common";
 
 @Entity({ name: "user_info" })
 export class UserInfo {
   @PrimaryGeneratedColumn("uuid")
   id: string;
+
+  @Column({ type: "enum", enum: ["admin", "user", "editor"], default: "user" })
+  role: RoleType; // Ensure role exists
 
   @Column({ nullable: false, unique: true })
   chatId: string;
@@ -25,6 +29,9 @@ export class UserInfo {
   email: string;
 
   @Column({ nullable: false, unique: true })
+  password: string;
+
+  @Column({ nullable: false, unique: true })
   phone: string;
 
   @CreateDateColumn()
@@ -32,4 +39,5 @@ export class UserInfo {
 
   @UpdateDateColumn()
   modifiedAt: Date;
+  activities: any;
 }
